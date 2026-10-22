@@ -1,0 +1,28 @@
+# https://docs.devin.ai/onboard-devin/environment-yaml
+# Commands run from the repo root. Poetry 2.5.1 is preinstalled on the org image (pyenv 3.12);
+# One-time setup (e.g., install system tools, global CLIs).
+initialize: |
+  if [ ! -x /home/ubuntu/.venvs/poetry171/bin/poetry ]; then
+    /home/ubuntu/.pyenv/versions/3.11.15/bin/python -m venv /home/ubuntu/.venvs/poetry171
+    /home/ubuntu/.venvs/poetry171/bin/pip install -q "poetry==1.7.1"
+  fi
+# Install project dependencies (runs during builds, surfaced to agent at session start).
+maintenance: |
+  poetry install
+# Reference info for agent
+knowledge:
+  - name: lint
+    contents: |
+      poetry run ruff check app/ tests/
+  - name: test
+    contents: |
+      poetry run pytest -v --tb=short
+  - name: startup
+    contents: |
+      poetry run uvicorn app.main:app --reload --port 8002
+  - name: shared-library
+    contents: |
+      demo-ledger-service is a Poetry git dependency pinned to a tag (needs network access to github.com). Processing fees come from app/fees.py -> ledger.fees.management_fee.
+  - name: lockfile
+    contents: |
+      poetry.lock is committed and CI runs `poetry lock --check` (Poetry 1.7.1). After changing pyproject.toml (e.g. bumping the library tag) regenerate with `/home/ubuntu/.venvs/poetry171/bin/poetry lock` and commit it; do not lock with the image's Poetry 2.5.1.
