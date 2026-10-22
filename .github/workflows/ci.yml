@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   test:
@@ -20,6 +21,9 @@ jobs:
 
       - name: Install Poetry
         run: pip install poetry==1.7.1
+
+      - name: Check lock file is current
+        run: poetry lock --check
 
       - name: Install dependencies
         run: poetry install
